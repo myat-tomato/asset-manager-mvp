@@ -19,14 +19,11 @@
 }
 
 .device-history-no {
-  display: inline-flex;
   min-height: 32px;
   align-items: center;
   justify-content: center;
   margin: 0 0 8px;
   padding: 5px 14px;
-  border-radius: 999px;
-  background: #eef2ff;
   color: var(--text);
   font-size: 14px;
   font-weight: 700;
