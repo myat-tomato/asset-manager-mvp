@@ -139,7 +139,7 @@ function QrGeneratePage() {
       navigate('/complete', {
         state: {
           title: '登録完了',
-          message: 'デバイス登録が完了しました。以下のQRコードを保存または印刷してください。',
+          message: 'デバイス登録が完了しました。',
           deviceNo: createdDeviceNo,
           showQr: true,
         },
@@ -223,12 +223,6 @@ function QrGeneratePage() {
           </p>
         )}
 
-        {error && (
-          <p className="error-message" role="alert">
-            エラー: {error}
-          </p>
-        )}
-
         <section className="qr-generate-section">
           <h2 className="qr-generate-section-title">基本情報</h2>
 
@@ -309,6 +303,12 @@ function QrGeneratePage() {
             {renderInputField('IP', 'ip')}
           </div>
         </details>
+
+        {error && (
+          <p className="error-message" role="alert">
+            エラー: {error}
+          </p>
+        )}
 
         <div className="qr-generate-actions">
           <button

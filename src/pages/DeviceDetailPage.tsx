@@ -325,18 +325,6 @@ function DeviceDetailPage() {
           <h1 className="device-detail-title">DEVICE詳細・編集</h1>
         </header>
 
-        {error && (
-          <p className="error-message" role="alert">
-            エラー: {error}
-          </p>
-        )}
-
-        {message && (
-          <p className="success-message">
-            {message}
-          </p>
-        )}
-
         <section className="detail-section">
           <h2 className="detail-section-title">基本情報</h2>
 
@@ -411,6 +399,18 @@ function DeviceDetailPage() {
             {renderInputField('IP', 'ip')}
           </div>
         </details>
+
+        {error && (
+          <p className="error-message" role="alert">
+            エラー: {error}
+          </p>
+        )}
+
+        {message && (
+          <p className="success-message">
+            {message}
+          </p>
+        )}
 
         <div className="detail-action-area">
           <button type="button" onClick={handleSave} disabled={saving}>

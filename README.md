@@ -331,12 +331,12 @@ Google Spreadsheet に、GAS実装で参照するシートを準備します。
 ```json
 {
   "status": {
-    "before": "未使用",
-    "after": "使用中"
+    "before": "2未使用",
+    "after": "1使用中"
   },
   "classification": {
-    "before": "在庫",
-    "after": "貸出"
+    "before": "4社内開発",
+    "after": "2現場貸出"
   }
 }
 ```

@@ -96,7 +96,6 @@ function CompletePage() {
 
               <button
                 type="button"
-                className="button-secondary"
                 onClick={handlePrintQr}
               >
                 印刷 / PDF保存
@@ -118,7 +117,6 @@ function CompletePage() {
           {deviceNo && !showQr && (
             <button
               type="button"
-              className="button-secondary"
               onClick={() => navigate(`/device/${encodeURIComponent(deviceNo)}/qr`)}
             >
               QR表示画面へ
@@ -127,7 +125,6 @@ function CompletePage() {
 
           <button
             type="button"
-            className="button-secondary"
             onClick={() => navigate('/devices')}
           >
             デバイス一覧へ
@@ -135,7 +132,6 @@ function CompletePage() {
 
           <button
             type="button"
-            className="button-secondary"
             onClick={() => navigate('/')}
           >
             メニューへ
