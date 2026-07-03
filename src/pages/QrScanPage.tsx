@@ -5,7 +5,6 @@ import { Html5QrcodeScanner } from 'html5-qrcode';
 function extractDeviceNoFromQrText(text: string) {
   const trimmed = text.trim();
 
-  // Case 1: QR contains URL like http://xxx?deviceNo=110
   try {
     const url = new URL(trimmed);
     const deviceNoFromQuery = url.searchParams.get('deviceNo');
@@ -14,7 +13,6 @@ function extractDeviceNoFromQrText(text: string) {
       return deviceNoFromQuery.trim();
     }
 
-    // Case 2: QR contains URL path like /device/110
     const match = url.pathname.match(/\/device\/([^/]+)/);
 
     if (match?.[1]) {
@@ -24,7 +22,6 @@ function extractDeviceNoFromQrText(text: string) {
     // Not a URL. Continue below.
   }
 
-  // Case 3: QR contains only raw DEVICE number like 110
   if (trimmed) {
     return trimmed;
   }
@@ -40,6 +37,7 @@ function QrScanPage() {
 
   const [error, setError] = useState('');
   const [scannedText, setScannedText] = useState('');
+  const [cameraReady, setCameraReady] = useState(false);
 
   useEffect(() => {
     const scanner = new Html5QrcodeScanner(
@@ -51,7 +49,7 @@ function QrScanPage() {
           height: 250,
         },
       },
-      false
+      false,
     );
 
     scannerRef.current = scanner;
@@ -62,6 +60,7 @@ function QrScanPage() {
 
         hasScannedRef.current = true;
         setScannedText(decodedText);
+        setError('');
 
         const deviceNo = extractDeviceNoFromQrText(decodedText);
 
@@ -81,8 +80,8 @@ function QrScanPage() {
           });
       },
       () => {
-        // Ignore scan failure per frame.
-      }
+        setCameraReady(true);
+      },
     );
 
     return () => {
@@ -95,50 +94,66 @@ function QrScanPage() {
   }, [navigate]);
 
   return (
-    <div style={{ padding: '24px' }}>
-      <h1>QRコード読取</h1>
+    <main className="qr-scan-page">
+      <section className="qr-scan-content">
+        <header className="qr-scan-header">
+          <button
+            type="button"
+            className="page-back-button"
+            onClick={() => navigate('/')}
+          >
+            ← メニュー
+          </button>
 
-      <p>DEVICEに貼られたQRコードをカメラで読み取ります。</p>
+          <h1 className="qr-scan-title">QRコード読取</h1>
 
-      {error && (
-        <p style={{ color: 'red' }}>
-          エラー: {error}
-        </p>
-      )}
+          <p className="qr-scan-description">
+            DEVICEに貼られたQRコードをカメラで読み取ります。
+          </p>
+        </header>
 
-      {scannedText && (
-        <div style={{ marginBottom: '16px' }}>
-          <p>読み取り内容:</p>
-          <p style={{ wordBreak: 'break-all' }}>{scannedText}</p>
+        {error && (
+          <p className="error-message" role="alert">
+            エラー: {error}
+          </p>
+        )}
+
+        {scannedText && (
+          <div className="qr-scan-result">
+            <p className="qr-scan-result-label">読み取り内容</p>
+            <p className="qr-scan-result-text">{scannedText}</p>
+          </div>
+        )}
+
+        {!cameraReady && (
+          <p className="loading-message">
+            カメラを起動しています...
+          </p>
+        )}
+
+        <div className="qr-reader-wrapper">
+          <div id="qr-reader" />
         </div>
-      )}
 
-      <div
-        id="qr-reader"
-        style={{
-          width: '100%',
-          maxWidth: '420px',
-        }}
-      />
+        <div className="qr-scan-actions">
+          <button type="button" onClick={() => navigate('/')}>
+            メニューへ戻る
+          </button>
 
-      <div style={{ marginTop: '16px' }}>
-        <button type="button" onClick={() => navigate('/')}>
-          メニューへ戻る
-        </button>
+          <button
+            type="button"
+            className="button-secondary"
+            onClick={() => navigate('/devices')}
+          >
+            DEVICE一覧へ
+          </button>
+        </div>
 
-        <button
-          type="button"
-          onClick={() => navigate('/devices')}
-          style={{ marginLeft: '8px' }}
-        >
-          DEVICE一覧へ
-        </button>
-      </div>
-
-      <p style={{ marginTop: '16px', color: '#666' }}>
-        カメラが起動しない場合は、ブラウザのカメラ許可とHTTPS環境を確認してください。
-      </p>
-    </div>
+        <p className="qr-scan-note">
+          カメラが起動しない場合は、ブラウザのカメラ許可とHTTPS環境を確認してください。
+        </p>
+      </section>
+    </main>
   );
 }
 

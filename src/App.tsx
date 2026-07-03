@@ -53,32 +53,41 @@ function MenuPage() {
   }
 
   return (
-    <div style={{ padding: '24px' }}>
-      <h1>Asset Manager MVP</h1>
-      <p>DEVICE貸出・返却管理システム</p>
+    <main className="menu-page">
+      <section className="menu-content">
+        <div className="menu-badge">HAM</div>
 
-      {user && (
-        <p>
-          ログインユーザー: <strong>{user.email}</strong>
+        <p className="menu-subtitle">
+          DEVICE貸出・返却管理システム
         </p>
-      )}
 
-      <div style={{ display: 'flex', gap: '12px' }}>
-        <button onClick={() => navigate('/devices')}>DEVICE一覧</button>
+        {user && (
+          <p className="menu-user">
+            ログインユーザー
+            <br />
+            <strong>{user.email}</strong>
+          </p>
+        )}
 
-        <button onClick={() => navigate('/qr')}>
-          QRコード生成
-        </button>
+        <div className="menu-actions">
+          <button onClick={() => navigate('/devices')}>
+            DEVICE一覧
+          </button>
 
-        <button onClick={() => navigate('/scan')}>
-          QRコード読取
-        </button>
+          <button onClick={() => navigate('/qr')}>
+            QRコード生成
+          </button>
 
-        <button onClick={handleLogout}>
+          <button onClick={() => navigate('/scan')}>
+            QRコード読取
+          </button>
+        </div>
+
+        <button className="menu-logout-button" onClick={handleLogout}>
           ログアウト
         </button>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
 

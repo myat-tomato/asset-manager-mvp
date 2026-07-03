@@ -24,7 +24,19 @@ function DeviceQrPage() {
   const { deviceNo } = useParams();
 
   if (!deviceNo) {
-    return <div style={{ padding: '24px' }}>DEVICE番号が見つかりません。</div>;
+    return (
+      <main className="device-qr-page">
+        <p className="error-message">DEVICE番号が見つかりません。</p>
+
+        <button
+          type="button"
+          className="button-secondary"
+          onClick={() => navigate('/devices')}
+        >
+          DEVICE一覧へ戻る
+        </button>
+      </main>
+    );
   }
 
   const qrUrl = getDeviceQrUrl(deviceNo);
@@ -43,49 +55,71 @@ function DeviceQrPage() {
   }
 
   return (
-    <div style={{ padding: '24px' }}>
-      <h1>QRコード生成</h1>
+    <main className="device-qr-page">
+      <section className="device-qr-content">
+        <header className="device-qr-header no-print">
+          <button
+            type="button"
+            className="page-back-button"
+            onClick={() => navigate(`/device/${encodeURIComponent(deviceNo)}`)}
+          >
+            ← 詳細へ戻る
+          </button>
 
-      <p>DEVICE番号: {deviceNo}</p>
+          <h1 className="device-qr-title">QRコード</h1>
+        </header>
 
-      <div
-        style={{
-          display: 'inline-block',
-          padding: '16px',
-          border: '1px solid #ccc',
-          background: '#fff',
-          marginBottom: '16px',
-        }}
-      >
-        <QRCodeCanvas
-          id="device-qr-code"
-          value={qrUrl}
-          size={240}
-          level="M"
-          includeMargin
-        />
-      </div>
+        <section>
+          <p className="device-qr-device-no">
+            DEVICE番号：<strong>{deviceNo}</strong>
+          </p>
 
-      <p style={{ wordBreak: 'break-all' }}>
-        {qrUrl}
-      </p>
+          <div className="device-qr-box">
+            <QRCodeCanvas
+              id="device-qr-code"
+              value={qrUrl}
+              size={240}
+              level="M"
+              includeMargin
+            />
+          </div>
 
-      <div style={{ marginTop: '16px' }}>
-        <button onClick={downloadQrCode}>PNG保存</button>
+          <p className="device-qr-url">
+            {qrUrl}
+          </p>
+        </section>
 
-        <button onClick={() => window.print()} style={{ marginLeft: '8px' }}>
-          印刷
-        </button>
+        <div className="device-qr-actions no-print">
+          <button type="button" onClick={downloadQrCode}>
+            PNG保存
+          </button>
 
-        <button onClick={() => navigate(`/device/${deviceNo}`)} style={{ marginLeft: '8px' }}>
-          詳細へ戻る
-        </button>
+          <button
+            type="button"
+            className="button-secondary"
+            onClick={() => window.print()}
+          >
+            印刷
+          </button>
 
-        <button onClick={() => navigate('/devices')} style={{ marginLeft: '8px' }}>
-          DEVICE一覧へ戻る
-        </button>
-      </div>
-    </div>
+          <button
+            type="button"
+            className="button-secondary"
+            onClick={() => navigate(`/device/${encodeURIComponent(deviceNo)}`)}
+          >
+            詳細へ戻る
+          </button>
+
+          <button
+            type="button"
+            className="button-secondary"
+            onClick={() => navigate('/devices')}
+          >
+            DEVICE一覧へ戻る
+          </button>
+        </div>
+      </section>
+    </main>
   );
 }
 

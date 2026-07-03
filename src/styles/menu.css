@@ -1,0 +1,100 @@
+.menu-page {
+  min-height: 100svh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 32px 20px;
+  text-align: center;
+  background:
+    radial-gradient(circle at top, rgba(37, 99, 235, 0.1), transparent 34%),
+    linear-gradient(180deg, #ffffff 0%, #f4f6f8 100%);
+}
+
+.menu-content {
+  width: 100%;
+  max-width: 430px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.menu-badge {
+  width: 68px;
+  height: 68px;
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  box-shadow: 0 12px 28px rgba(235, 37, 37, 0.25);
+}
+
+.menu-title {
+  margin: 0 0 10px;
+  font-size: 34px;
+  line-height: 1.15;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+
+.menu-subtitle {
+  margin: 0 0 18px;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.7;
+}
+
+.menu-user {
+  width: 100%;
+  margin: 0 0 26px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.menu-user strong {
+  color: var(--text);
+  font-size: 14px;
+  word-break: break-all;
+}
+
+.menu-actions {
+  width: 100%;
+  display: grid;
+  gap: 12px;
+}
+
+.menu-actions button {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 14px;
+  font-size: 15px;
+}
+
+.menu-logout-button {
+  width: auto;
+  min-width: 120px;
+  min-height: 40px;
+  margin-top: 22px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  font-size: 14px;
+  box-shadow: none;
+}
+
+.menu-logout-button:hover {
+  background: #e5e7eb;
+  color: var(--text);
+}

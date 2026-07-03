@@ -7,7 +7,6 @@ import { getDeviceHistory, type DeviceHistory } from '../services/historyService
 import DeviceHistoryTable from '../components/DeviceHistoryTable';
 import EmployeeSearchSelect from '../components/EmployeeSearchSelect';
 
-
 const emptyOptions: DeviceOptions = {
   currentUsers: [],
   statuses: [],
@@ -79,12 +78,26 @@ function normalizeDevice(device: Device): Device {
 
 function getOptionsWithCurrent(options: string[], currentValue: string) {
   if (!currentValue) return options;
-
-  if (options.includes(currentValue)) {
-    return options;
-  }
-
+  if (options.includes(currentValue)) return options;
   return [currentValue, ...options];
+}
+
+type FieldShellProps = {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+};
+
+function FieldShell({ label, required, children }: FieldShellProps) {
+  return (
+    <label className="detail-field">
+      <span className="detail-field-label">
+        {label}
+        {required && <span className="required-mark"> *</span>}
+      </span>
+      {children}
+    </label>
+  );
 }
 
 function DeviceDetailPage() {
@@ -149,35 +162,18 @@ function DeviceDetailPage() {
     }));
   }
 
+  function updateTextField<K extends keyof Device>(key: K, value: string) {
+    updateField(key, value as Device[K]);
+  }
+
   function validateForm() {
-    if (!form.deviceNo.trim()) {
-      return 'DEVICE番号が指定されていません。';
-    }
-
-    if (!form.deviceName.trim()) {
-      return 'DEVICE名を入力してください。';
-    }
-
-    if (!form.status) {
-      return '状況を選択してください。';
-    }
-
-    if (!form.classification) {
-      return '分類を選択してください。';
-    }
-
-    if (!form.location) {
-      return '場所を選択してください。';
-    }
-
-    if (!form.purpose) {
-      return '用途を選択してください。';
-    }
-
-    if (!form.category) {
-      return '区分を選択してください。';
-    }
-
+    if (!form.deviceNo.trim()) return 'DEVICE番号が指定されていません。';
+    if (!form.deviceName.trim()) return 'DEVICE名を入力してください。';
+    if (!form.status) return '状況を選択してください。';
+    if (!form.classification) return '分類を選択してください。';
+    if (!form.location) return '場所を選択してください。';
+    if (!form.purpose) return '用途を選択してください。';
+    if (!form.category) return '区分を選択してください。';
     return '';
   }
 
@@ -227,384 +223,218 @@ function DeviceDetailPage() {
     }
   }
 
+  function renderSelectField(
+    label: string,
+    key: keyof Device,
+    values: string[],
+    required = false,
+  ) {
+    const currentValue = String(form[key] ?? '');
+
+    return (
+      <FieldShell label={label} required={required}>
+        <select
+          value={currentValue}
+          onChange={(e) => updateTextField(key, e.target.value)}
+          disabled={saving}
+        >
+          <option value="">選択してください</option>
+          {getOptionsWithCurrent(values, currentValue).map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </FieldShell>
+    );
+  }
+
+  function renderInputField(
+    label: string,
+    key: keyof Device,
+    required = false,
+    disabled = saving,
+  ) {
+    return (
+      <FieldShell label={label} required={required}>
+        <input
+          value={String(form[key] ?? '')}
+          onChange={(e) => updateTextField(key, e.target.value)}
+          disabled={disabled}
+        />
+      </FieldShell>
+    );
+  }
+
   if (loading) {
-    return <div style={{ padding: '24px' }}>読み込み中...</div>;
+    return (
+      <main className="device-detail-page">
+        <p className="loading-message">読み込み中...</p>
+      </main>
+    );
   }
 
   if (error && !originalDevice) {
     return (
-      <div style={{ padding: '24px', color: 'red' }}>
-        エラー: {error}
-        <br />
-        <button type="button" onClick={() => navigate('/devices')}>
+      <main className="device-detail-page">
+        <p className="error-message" role="alert">
+          エラー: {error}
+        </p>
+
+        <button type="button" className="button-secondary" onClick={() => navigate('/devices')}>
           DEVICE一覧へ戻る
         </button>
-      </div>
+      </main>
     );
   }
 
   if (!originalDevice) {
     return (
-      <div style={{ padding: '24px' }}>
-        <h1>DEVICE詳細</h1>
-        <p>対象DEVICEが見つかりません。</p>
-        <button type="button" onClick={() => navigate('/devices')}>
-          DEVICE一覧へ戻る
-        </button>
-      </div>
+      <main className="device-detail-page">
+        <section className="device-detail-content">
+          <h1 className="device-detail-title">DEVICE詳細</h1>
+          <p className="device-detail-muted">対象DEVICEが見つかりません。</p>
+
+          <button type="button" className="button-secondary" onClick={() => navigate('/devices')}>
+            DEVICE一覧へ戻る
+          </button>
+        </section>
+      </main>
     );
   }
 
-  const inputDisabled = saving;
-
   return (
-    <div style={{ padding: '24px' }}>
-      <h1>DEVICE詳細・編集</h1>
-
-      {error && (
-        <p style={{ color: 'red' }}>
-          エラー: {error}
-        </p>
-      )}
-
-      {message && (
-        <p style={{ color: 'green' }}>
-          {message}
-        </p>
-      )}
-
-      <div
-        style={{
-          display: 'grid',
-          gap: '12px',
-          maxWidth: '620px',
-          marginBottom: '24px',
-        }}
-      >
-        <label>
-          番号
-          <input
-            value={form.deviceNo}
-            disabled
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-
-        <label>
-          DEVICE名 <span style={{ color: 'red' }}>*</span>
-          <input
-            value={form.deviceName}
-            onChange={(e) => updateField('deviceName', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-
-        <label>
-          現在使用者
-          <EmployeeSearchSelect
-            value={form.currentUser}
-            disabled={inputDisabled}
-            onChange={(employee, displayName) => {
-              updateField('currentUser', displayName);
-
-              if (employee) {
-                updateField('employmentStatus', employee.status);
-              }
-            }}
-          />
-        </label>
-
-        <label>
-          状況 <span style={{ color: 'red' }}>*</span>
-          <select
-            value={form.status}
-            onChange={(e) => updateField('status', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
+    <main className="device-detail-page">
+      <section className="device-detail-content">
+        <header className="device-detail-header">
+          <button
+            type="button"
+            className="page-back-button"
+            onClick={() => navigate('/devices')}
+            disabled={saving}
           >
-            <option value="">選択してください</option>
-            {getOptionsWithCurrent(options.statuses, form.status).map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
+            ← 一覧
+          </button>
+          <p className="device-detail-no">{form.deviceNo}</p>
 
-        <label>
-          分類 <span style={{ color: 'red' }}>*</span>
-          <select
-            value={form.classification}
-            onChange={(e) => updateField('classification', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
+          <section className="detail-history-section">
+            <h2 className="detail-section-title">更新履歴</h2>
+            <DeviceHistoryTable historyList={historyList} />
+          </section>
+
+          <h1 className="device-detail-title">DEVICE詳細・編集</h1>
+        </header>
+
+        {error && (
+          <p className="error-message" role="alert">
+            エラー: {error}
+          </p>
+        )}
+
+        {message && (
+          <p className="success-message">
+            {message}
+          </p>
+        )}
+
+        <section className="detail-section">
+          <h2 className="detail-section-title">基本情報</h2>
+
+          <div className="detail-form-grid">
+            {renderInputField('番号', 'deviceNo', false, true)}
+            {renderInputField('DEVICE名', 'deviceName', true)}
+
+            <FieldShell label="現在使用者">
+              <EmployeeSearchSelect
+                value={form.currentUser}
+                disabled={saving}
+                onChange={(employee, displayName) => {
+                  updateTextField('currentUser', displayName);
+
+                  if (employee) {
+                    updateTextField('employmentStatus', employee.status);
+                  }
+                }}
+              />
+            </FieldShell>
+
+            {renderSelectField('状況', 'status', options.statuses, true)}
+            {renderSelectField('分類', 'classification', options.classifications, true)}
+            {renderSelectField('場所', 'location', options.locations, true)}
+            {renderSelectField('用途', 'purpose', options.purposes, true)}
+            {renderSelectField('区分', 'category', options.categories, true)}
+          </div>
+        </section>
+
+        <details className="detail-section">
+          <summary className="detail-section-title">利用者・貸出情報</summary>
+
+          <div className="detail-form-grid">
+            {renderInputField('在/退職', 'employmentStatus')}
+            {renderInputField('以前使用者', 'previousUser')}
+            {renderInputField('状態', 'condition')}
+            {renderInputField('貸出日', 'loanDate')}
+            {renderInputField('貸出証', 'loanSlip')}
+
+            <FieldShell label="備考">
+              <textarea
+                value={form.notes}
+                onChange={(e) => updateTextField('notes', e.target.value)}
+                disabled={saving}
+                rows={3}
+              />
+            </FieldShell>
+          </div>
+        </details>
+
+        <details className="detail-section">
+          <summary className="detail-section-title">端末スペック</summary>
+
+          <div className="detail-form-grid">
+            {renderInputField('製造社', 'manufacturer')}
+            {renderInputField('モデル名', 'modelName')}
+            {renderInputField('CPU', 'cpu')}
+            {renderInputField('RAM', 'ram')}
+            {renderInputField('購入日', 'purchaseDate')}
+          </div>
+        </details>
+
+        <details className="detail-section">
+          <summary className="detail-section-title">OS・ライセンス・ネットワーク</summary>
+
+          <div className="detail-form-grid">
+            {renderInputField('OS名', 'osName')}
+            {renderInputField('OS Licence', 'osLicense')}
+            {renderInputField('バックアップイメージ作成日', 'backupImageDate')}
+            {renderInputField('ログインアカウント/パスワード/PIN', 'loginAccount')}
+            {renderInputField('Office Licence', 'officeLicense')}
+            {renderInputField('IP', 'ip')}
+          </div>
+        </details>
+
+        <div className="detail-action-area">
+          <button type="button" onClick={handleSave} disabled={saving}>
+            {saving ? '保存中...' : '保存'}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate(`/device/${encodeURIComponent(form.deviceNo)}/qr`)}
+            disabled={saving}
           >
-            <option value="">選択してください</option>
-            {getOptionsWithCurrent(options.classifications, form.classification).map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
+            QR表示
+          </button>
 
-        <label>
-          場所 <span style={{ color: 'red' }}>*</span>
-          <select
-            value={form.location}
-            onChange={(e) => updateField('location', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
+          <button
+            type="button"
+            onClick={() => navigate('/devices')}
+            disabled={saving}
           >
-            <option value="">選択してください</option>
-            {getOptionsWithCurrent(options.locations, form.location).map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          用途 <span style={{ color: 'red' }}>*</span>
-          <select
-            value={form.purpose}
-            onChange={(e) => updateField('purpose', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          >
-            <option value="">選択してください</option>
-            {getOptionsWithCurrent(options.purposes, form.purpose).map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          区分 <span style={{ color: 'red' }}>*</span>
-          <select
-            value={form.category}
-            onChange={(e) => updateField('category', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          >
-            <option value="">選択してください</option>
-            {getOptionsWithCurrent(options.categories, form.category).map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          在/退職
-          <input
-            value={form.employmentStatus}
-            onChange={(e) => updateField('employmentStatus', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-
-        <label>
-          以前使用者
-          <input
-            value={form.previousUser}
-            onChange={(e) => updateField('previousUser', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-
-        <label>
-          状態
-          <input
-            value={form.condition}
-            onChange={(e) => updateField('condition', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-
-        <label>
-          備考
-          <textarea
-            value={form.notes}
-            onChange={(e) => updateField('notes', e.target.value)}
-            disabled={inputDisabled}
-            style={{
-              display: 'block',
-              padding: '8px',
-              width: '100%',
-              minHeight: '80px',
-            }}
-          />
-        </label>
-
-        <label>
-          貸出日
-          <input
-            value={form.loanDate}
-            onChange={(e) => updateField('loanDate', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-
-        <label>
-          貸出証
-          <input
-            value={form.loanSlip}
-            onChange={(e) => updateField('loanSlip', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-
-        <label>
-          製造社
-          <input
-            value={form.manufacturer}
-            onChange={(e) => updateField('manufacturer', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-
-        <label>
-          モデル名
-          <input
-            value={form.modelName}
-            onChange={(e) => updateField('modelName', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-
-        <label>
-          CPU
-          <input
-            value={form.cpu}
-            onChange={(e) => updateField('cpu', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-
-        <label>
-          RAM
-          <input
-            value={form.ram}
-            onChange={(e) => updateField('ram', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-
-        <label>
-          購入日
-          <input
-            value={form.purchaseDate}
-            onChange={(e) => updateField('purchaseDate', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-
-        <label>
-          OS名
-          <input
-            value={form.osName}
-            onChange={(e) => updateField('osName', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-
-        <label>
-          OS Licence
-          <input
-            value={form.osLicense}
-            onChange={(e) => updateField('osLicense', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-
-        <label>
-          バックアップイメージ作成日
-          <input
-            value={form.backupImageDate}
-            onChange={(e) => updateField('backupImageDate', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-
-        <label>
-          ログインアカウント/パスワード/PIN
-          <input
-            value={form.loginAccount}
-            onChange={(e) => updateField('loginAccount', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-
-        <label>
-          Office Licence
-          <input
-            value={form.officeLicense}
-            onChange={(e) => updateField('officeLicense', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-
-        <label>
-          IP
-          <input
-            value={form.ip}
-            onChange={(e) => updateField('ip', e.target.value)}
-            disabled={inputDisabled}
-            style={{ display: 'block', padding: '8px', width: '100%' }}
-          />
-        </label>
-      </div>
-
-      <div style={{ marginTop: '16px' }}>
-        <button type="button" onClick={handleSave} disabled={saving}>
-          {saving ? '保存中...' : '保存'}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => navigate(`/device/${encodeURIComponent(form.deviceNo)}/qr`)}
-          disabled={saving}
-          style={{ marginLeft: '8px' }}
-        >
-          QR表示
-        </button>
-
-        <button
-          type="button"
-          onClick={() => navigate('/devices')}
-          disabled={saving}
-          style={{ marginLeft: '8px' }}
-        >
-          DEVICE一覧へ戻る
-        </button>
-      </div>
-
-      <div style={{ marginTop: '32px' }}>
-        <h2>更新履歴</h2>
-        <DeviceHistoryTable historyList={historyList} />
-      </div>
-    </div>
+            一覧へ戻る
+          </button>
+        </div>
+      </section>
+    </main>
   );
 }
 

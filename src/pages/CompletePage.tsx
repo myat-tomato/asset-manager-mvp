@@ -10,7 +10,7 @@ type CompletePageState = {
 };
 
 function buildDeviceQrUrl(deviceNo: string) {
-  const baseUrl = import.meta.env.VITE_APP_BASE_URL || window.location.origin;
+  const baseUrl = (import.meta.env.VITE_APP_BASE_URL || window.location.origin).replace(/\/$/, '');
   return `${baseUrl}/?deviceNo=${encodeURIComponent(deviceNo)}`;
 }
 
@@ -29,15 +29,11 @@ function CompletePage() {
   const qrUrl = deviceNo ? buildDeviceQrUrl(deviceNo) : '';
 
   function handleDownloadQr() {
-    if (!deviceNo) {
-      return;
-    }
+    if (!deviceNo) return;
 
     const canvas = qrContainerRef.current?.querySelector('canvas');
 
-    if (!canvas) {
-      return;
-    }
+    if (!canvas) return;
 
     const url = canvas.toDataURL('image/png');
     const link = document.createElement('a');
@@ -52,111 +48,101 @@ function CompletePage() {
   }
 
   return (
-    <div style={{ padding: '24px' }}>
-      <h1>{title}</h1>
-
-      <p>{message}</p>
-
-      {deviceNo && (
-        <p>
-          デバイス番号: <strong>{deviceNo}</strong>
-        </p>
-      )}
-
-      {showQr && (
-        <div
-          style={{
-            marginTop: '24px',
-            marginBottom: '24px',
-            padding: '16px',
-            border: '1px solid #ddd',
-            borderRadius: '8px',
-            maxWidth: '360px',
-          }}
-        >
-          <h2>QRコード</h2>
-          <p>
-            このQRコードを読み取ると、対象デバイスの詳細画面へアクセスできます。
-          </p>
-
-          <div ref={qrContainerRef}>
-            <QRCodeCanvas
-              value={qrUrl}
-              size={240}
-              level="M"
-              includeMargin
-            />
-          </div>
-
-          <p
-            style={{
-              marginTop: '12px',
-              wordBreak: 'break-all',
-              fontSize: '12px',
-            }}
-          >
-            {qrUrl}
-          </p>
-
-          <div style={{ marginTop: '16px' }}>
-            <button type="button" onClick={handleDownloadQr}>
-              PNG保存
-            </button>
-
-            <button
-              type="button"
-              onClick={handlePrintQr}
-              style={{ marginLeft: '8px' }}
-            >
-              印刷 / PDF保存
-            </button>
-          </div>
+    <main className="complete-page">
+      <section className="complete-content">
+        <div className="complete-icon">
+          ✓
         </div>
-      )}
 
-      <div style={{ marginTop: '16px' }}>
+        <h1 className="complete-title">{title}</h1>
+
+        <p className="complete-message">
+          {message}
+        </p>
+
         {deviceNo && (
-          <>
+          <p className="complete-device-no">
+            デバイス番号：<strong>{deviceNo}</strong>
+          </p>
+        )}
+
+        {showQr && (
+          <section className="complete-qr-section">
+            <div className="complete-qr-print-area">
+              <h2 className="complete-qr-title">QRコード</h2>
+
+              <p className="complete-qr-description">
+                このQRコードを読み取ると、対象デバイスの詳細画面へアクセスできます。
+              </p>
+
+              <div className="complete-qr-box" ref={qrContainerRef}>
+                <QRCodeCanvas
+                  value={qrUrl}
+                  size={240}
+                  level="M"
+                  includeMargin
+                />
+              </div>
+
+              <p className="complete-qr-url">
+                {qrUrl}
+              </p>
+            </div>
+
+            <div className="complete-qr-actions no-print">
+              <button type="button" onClick={handleDownloadQr}>
+                PNG保存
+              </button>
+
+              <button
+                type="button"
+                className="button-secondary"
+                onClick={handlePrintQr}
+              >
+                印刷 / PDF保存
+              </button>
+            </div>
+          </section>
+        )}
+
+        <div className="complete-actions no-print">
+          {deviceNo && (
             <button
               type="button"
-              onClick={() =>
-                navigate(`/device/${encodeURIComponent(deviceNo)}`)
-              }
+              onClick={() => navigate(`/device/${encodeURIComponent(deviceNo)}`)}
             >
               デバイス詳細へ
             </button>
+          )}
 
-            {!showQr && (
-              <button
-                type="button"
-                onClick={() =>
-                  navigate(`/device/${encodeURIComponent(deviceNo)}/qr`)
-                }
-                style={{ marginLeft: '8px' }}
-              >
-                QR表示画面へ
-              </button>
-            )}
-          </>
-        )}
+          {deviceNo && !showQr && (
+            <button
+              type="button"
+              className="button-secondary"
+              onClick={() => navigate(`/device/${encodeURIComponent(deviceNo)}/qr`)}
+            >
+              QR表示画面へ
+            </button>
+          )}
 
-        <button
-          type="button"
-          onClick={() => navigate('/devices')}
-          style={{ marginLeft: deviceNo ? '8px' : 0 }}
-        >
-          デバイス一覧へ
-        </button>
+          <button
+            type="button"
+            className="button-secondary"
+            onClick={() => navigate('/devices')}
+          >
+            デバイス一覧へ
+          </button>
 
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          style={{ marginLeft: '8px' }}
-        >
-          メニューへ
-        </button>
-      </div>
-    </div>
+          <button
+            type="button"
+            className="button-secondary"
+            onClick={() => navigate('/')}
+          >
+            メニューへ
+          </button>
+        </div>
+      </section>
+    </main>
   );
 }
 

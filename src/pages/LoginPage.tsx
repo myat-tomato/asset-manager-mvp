@@ -54,15 +54,13 @@ function LoginPage() {
       return;
     }
 
-    if (!buttonRef.current) {
-      return;
-    }
-
     waitForGoogleScript()
       .then((google) => {
         if (!buttonRef.current) {
           return;
         }
+
+        buttonRef.current.innerHTML = '';
 
         google.accounts.id.initialize({
           client_id: clientId,
@@ -90,7 +88,7 @@ function LoginPage() {
           theme: 'outline',
           size: 'large',
           text: 'signin_with',
-          shape: 'rectangular',
+          shape: 'pill',
         });
       })
       .catch((err) => {
@@ -99,21 +97,37 @@ function LoginPage() {
   }, [location.state, navigate]);
 
   return (
-    <div style={{ padding: '24px' }}>
-      <h1>Asset Manager MVP</h1>
+    <main className="login-page">
+      <section className="login-content">
+        <div className="login-badge">HAM</div>
 
-      <p>Googleアカウントでログインしてください。</p>
-
-      {error && (
-        <p style={{ color: 'red' }}>
-          エラー: {error}
+        <p className="login-title">
+          QRコード連携型デバイス貸出・返却管理システム
         </p>
-      )}
 
-      {loading && <p>ログイン確認中...</p>}
+        <p className="login-description">
+          Googleアカウントでログインしてください。
+        </p>
 
-      <div ref={buttonRef} />
-    </div>
+        {error && (
+          <p className="error-message login-message" role="alert">
+            エラー: {error}
+          </p>
+        )}
+
+        {loading && (
+          <p className="loading-message" aria-live="polite">
+            ログイン確認中...
+          </p>
+        )}
+
+        <div className="google-login-button" ref={buttonRef} />
+      </section>
+
+      <footer className="login-footer">
+        MVP / Demo Version
+      </footer>
+    </main>
   );
 }
 

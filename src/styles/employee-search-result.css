@@ -1,0 +1,46 @@
+.employee-option-button {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 9px 10px;
+  border: none;
+  border-bottom: 1px solid #eee;
+  border-radius: 0;
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.employee-option-button:hover {
+  background: #f9fafb;
+}
+
+.employee-option-name {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.employee-option-name::-webkit-scrollbar {
+  display: none;
+}
+
+.employee-option-meta {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.employee-option-meta::-webkit-scrollbar {
+  display: none;
+}

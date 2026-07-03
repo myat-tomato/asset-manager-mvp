@@ -175,34 +175,14 @@ function EmployeeSearchSelect({
             <button
               key={`${employee.employeeNo}-${employee.name}-${index}`}
               type="button"
+              className="employee-option-button"
               onMouseDown={(e) => {
                 e.preventDefault();
                 handleSelect(employee);
               }}
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '8px',
-                textAlign: 'left',
-                border: 'none',
-                borderBottom: '1px solid #eee',
-                background: '#fff',
-                cursor: 'pointer',
-              }}
             >
-              <div>
+              <div className="employee-option-name">
                 {getEmployeeLabel(employee)}
-              </div>
-
-              <div style={{ fontSize: '12px', color: '#666' }}>
-                {[
-                  employee.employeeNo,
-                  employee.status,
-                  employee.position,
-                  employee.nationality,
-                ]
-                  .filter(Boolean)
-                  .join(' / ')}
               </div>
             </button>
           ))}

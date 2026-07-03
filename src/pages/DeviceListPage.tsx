@@ -1,6 +1,23 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDeviceList, type Device } from '../services/deviceService';
+
+type DisplayField =
+  | 'deviceName'
+  | 'status'
+  | 'classification'
+  | 'currentUser'
+  | 'location';
+
+type ActionValue = '' | 'detail' | 'qr' | 'history';
+
+const displayFieldOptions: { value: DisplayField; label: string }[] = [
+  { value: 'deviceName', label: 'DEVICE名' },
+  { value: 'status', label: '状況' },
+  { value: 'classification', label: '分類' },
+  { value: 'currentUser', label: '現在使用者' },
+  { value: 'location', label: '場所' },
+];
 
 function DeviceListPage() {
   const navigate = useNavigate();
@@ -10,6 +27,7 @@ function DeviceListPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [keyword, setKeyword] = useState('');
+  const [displayField, setDisplayField] = useState<DisplayField>('deviceName');
 
   function loadDeviceList() {
     setError('');
@@ -20,7 +38,6 @@ function DeviceListPage() {
       setRefreshing(true);
     }
 
-    // Get all data from GAS once
     getDeviceList('')
       .then(setAllDeviceList)
       .catch((err) => setError(err.message))
@@ -56,98 +73,172 @@ function DeviceListPage() {
     });
   }, [allDeviceList, keyword]);
 
-  if (loading) return <div style={{ padding: '24px' }}>読み込み中...</div>;
+  function getDisplayValue(device: Device) {
+    return String(device[displayField] ?? '-');
+  }
+
+  function handleActionChange(
+    deviceNo: string,
+    event: ChangeEvent<HTMLSelectElement>,
+  ) {
+    const action = event.target.value as ActionValue;
+
+    if (!action) return;
+
+    if (action === 'detail') {
+      navigate(`/device/${encodeURIComponent(deviceNo)}`);
+      return;
+    }
+
+    if (action === 'qr') {
+      navigate(`/device/${encodeURIComponent(deviceNo)}/qr`);
+      return;
+    }
+
+    if (action === 'history') {
+      navigate(`/device/${encodeURIComponent(deviceNo)}/history`);
+    }
+  }
+
+  if (loading) {
+    return (
+      <main className="device-list-page">
+        <p className="loading-message">読み込み中...</p>
+      </main>
+    );
+  }
 
   if (error) {
     return (
-      <div style={{ padding: '24px', color: 'red' }}>
-        エラー: {error}
-      </div>
+      <main className="device-list-page">
+        <p className="error-message" role="alert">
+          エラー: {error}
+        </p>
+
+        <button className="button-secondary" onClick={() => navigate('/')}>
+          メニューへ戻る
+        </button>
+      </main>
     );
   }
 
   return (
-    <div style={{ padding: '24px' }}>
-      <h1>DEVICE一覧</h1>
+    <main className="device-list-page">
+      <section className="device-list-content">
+        <header className="device-list-header">
+          <button
+            type="button"
+            className="page-back-button"
+            onClick={() => navigate('/')}
+          >
+            ← メニュー
+          </button>
 
-      <div style={{ marginBottom: '16px' }}>
-        <input
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-          placeholder="番号 / DEVICE名 / 使用者で検索"
-          style={{ padding: '8px', width: '260px', marginRight: '8px' }}
-        />
+          <h1 className="device-list-title">DEVICE一覧</h1>
 
-        <button onClick={() => setKeyword('')}>
-          クリア
-        </button>
+          <p className="device-list-count">
+            表示件数: {filteredDeviceList.length} / {allDeviceList.length}
+          </p>
+        </header>
 
-        <button onClick={loadDeviceList} style={{ marginLeft: '8px' }}>
-          {refreshing ? '更新中...' : '更新'}
-        </button>
+        <div className="device-list-controls">
+          <input
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            placeholder="番号 / DEVICE名 / 使用者で検索"
+            className="device-search-input"
+          />
 
-        <button onClick={() => navigate('/')} style={{ marginLeft: '8px' }}>
-          メニューへ戻る
-        </button>
-      </div>
+          <select
+            value={displayField}
+            onChange={(e) => setDisplayField(e.target.value as DisplayField)}
+            className="device-field-select"
+            aria-label="表示項目"
+          >
+            {displayFieldOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                表示: {option.label}
+              </option>
+            ))}
+          </select>
 
-      <p>
-        表示件数: {filteredDeviceList.length} / {allDeviceList.length}
-      </p>
+          <div className="device-control-buttons">
+            <button
+              type="button"
+              className="button-secondary"
+              onClick={() => setKeyword('')}
+            >
+              クリア
+            </button>
 
-      <table border={1} cellPadding={8} style={{ borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th>番号</th>
-            <th>DEVICE名</th>
-            <th>状況</th>
-            <th>分類</th>
-            <th>現在使用者</th>
-            <th>場所</th>
-            <th>操作</th>
-          </tr>
-        </thead>
+            <button
+              type="button"
+              className="button-secondary"
+              onClick={loadDeviceList}
+              disabled={refreshing}
+            >
+              {refreshing ? '更新中...' : '更新'}
+            </button>
+          </div>
+        </div>
 
-        <tbody>
-          {filteredDeviceList.map((device) => (
-            <tr key={String(device.deviceNo)}>
-              <td>{device.deviceNo}</td>
-              <td>{device.deviceName}</td>
-              <td>{device.status}</td>
-              <td>{device.classification}</td>
-              <td>{device.currentUser}</td>
-              <td>{device.location}</td>
-              <td>
-                <button onClick={() => navigate(`/device/${device.deviceNo}`)}>
-                  詳細
-                </button>
+        <div className="device-table-wrapper">
+          <table className="device-table">
+            <thead>
+              <tr>
+                <th>番号</th>
+                <th>
+                  {
+                    displayFieldOptions.find(
+                      (option) => option.value === displayField,
+                    )?.label
+                  }
+                </th>
+                <th>操作</th>
+              </tr>
+            </thead>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    const deviceNo = String(device.deviceNo).trim();
-                    navigate(`/device/${encodeURIComponent(deviceNo)}/qr`);
-                  }}
-                  style={{ marginLeft: '8px' }}
-                >
-                  QR
-                </button>
+            <tbody>
+              {filteredDeviceList.map((device) => {
+                const deviceNo = String(device.deviceNo).trim();
 
-                <button
-                  type="button"
-                  onClick={() => navigate(`/device/${encodeURIComponent(String(device.deviceNo))}/history`)}
-                  style={{ marginLeft: '8px' }}
-                >
-                  履歴
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                return (
+                  <tr key={deviceNo}>
+                    <td className="device-no-cell">{device.deviceNo}</td>
 
-      {filteredDeviceList.length === 0 && <p>対象DEVICEが見つかりません。</p>}
-    </div>
+                    <td className="device-main-cell">
+                      {getDisplayValue(device)}
+                    </td>
+
+                    <td className="device-action-cell">
+                      <select
+                        defaultValue=""
+                        className="device-action-select"
+                        aria-label={`${deviceNo}の操作`}
+                        onChange={(event) => handleActionChange(deviceNo, event)}
+                      >
+                        <option value="" disabled>
+                          選択
+                        </option>
+                        <option value="detail">詳細</option>
+                        <option value="qr">QR表示</option>
+                        <option value="history">履歴</option>
+                      </select>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {filteredDeviceList.length === 0 && (
+          <p className="device-empty-message">
+            対象DEVICEが見つかりません。
+          </p>
+        )}
+      </section>
+    </main>
   );
 }
 
